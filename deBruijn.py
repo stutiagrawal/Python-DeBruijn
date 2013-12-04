@@ -16,8 +16,12 @@ class graph(object):
     def createKmers(self):
         if(is_valid_file(self.reads)):
             file = open(self.reads, "r")
+            count=0
             for line in file:
                 if(not(line.startswith(">"))):
+                    count+=1
+                    if count%10000==0:
+                        print count
                     for i in xrange(0, len(line)-self.kMerLen):    
                         kMer = self.str2kmer(line[i:i+self.kMerLen])
                         if(kMer not in self.kMers):
