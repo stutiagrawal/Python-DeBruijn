@@ -1,3 +1,4 @@
+import tarjan
 import numpy as np
 import matplotlib.pyplot as plt
 from val import *
@@ -17,11 +18,12 @@ class graph(object):
         if(is_valid_file(self.reads)):
             file = open(self.reads, "r")
             count=0
+            print "Creating kMers"
             for line in file:
                 if(not(line.startswith(">"))):
                     count+=1
                     if count%10000==0:
-                        print count
+                        print "Readline: "+str(count)
                     for i in xrange(0, len(line)-self.kMerLen):    
                         kMer = self.str2kmer(line[i:i+self.kMerLen])
                         if(kMer not in self.kMers):
@@ -147,15 +149,21 @@ class graph(object):
         return np.mean(degrees)
 
     def size(self):
-        return len(self.graph.keys()), len(self.graph.values())
+        edges=0
+        for value in self.graph.values():
+            edges+=len(value)
+        return (len(self.graph.keys()), edges,len(self.kMers))
 
     def selfLoop(self):
         circleList=tarjan.tarjan(self.graph)
         count=0
+        size=0
         for circle in circleList:
             if len(circle)>1:
                 count+=1
-        return count
+                size+=len(circle)
+
+        return count, float(size)/count
 
 
 ###########################################################################
@@ -165,3 +173,16 @@ class graph(object):
 # #print a.createKmers()
 # print a.getPrefix("ATTA")
 # print a.createGraph(["ATTA", "ATTT"])
+filename=sys.argv[3]
+a=graph(int(sys.argv[1]),sys.argv[2])
+a.createGraph()
+doc=''
+doc+='kMerStats: '+str(a.kMerStats())+'\n'
+doc+= 'graphSize: '+ str(a.size())+'\n'
+doc+= 'connectivity: '+ str(a.connectivity()) + '\n'
+doc+= 'selfLoop: '+ str(a.selfLoop()) +'\n'
+a.plotKmerCoverage(filename+'.png')
+f=open(filename,'w')
+f.write(doc)
+f.close()
+
